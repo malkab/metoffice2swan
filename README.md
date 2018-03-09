@@ -11,8 +11,8 @@ metoffice2swan -d decimal_separator -s csv_delimiter [targetFolder]
 
 where "targetFolder" is the folder containing the CSV files to transform, and the options:
 
--d decimal_separator: determines the decimal separator (, or ., defaults to ,)
--s csv_separator: determines the CSV separator (defaults to ;)
+- -d decimal_separator: determines the decimal separator (, or ., defaults to ,)
+- -s csv_separator: determines the CSV separator (defaults to ;)
 
 for example:
 
