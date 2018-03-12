@@ -9,8 +9,8 @@ from glob import glob
 
 
 parser = argparse.ArgumentParser(description="Converts wave height data from CSV to SWAN format. Check README.md for additional info.")
-parser.add_argument("-d", default=",", help="Decimal delimiter, defaults to ','", dest="decimal")
-parser.add_argument("-s", default=";", help="Column separator, defaults to ';'", dest="separator")
+parser.add_argument("-d", default=".", help="Decimal delimiter, defaults to '.'", dest="decimal")
+parser.add_argument("-s", default=",", help="Column separator, defaults to ','", dest="separator")
 parser.add_argument("folder", default=".", help="Folder containing CSV files to process")
 
 args = parser.parse_args()
@@ -25,20 +25,30 @@ if not isdir(join(args.folder, "out-swan")):
 for f in files:
     fp = split(f)
 
-    # Write header
-    out = open(join(fp[0], "out-swan", fp[1]+".txt"), "w")
-    out.write("TPAR\n\n")
-    out.close()
+    try:
+        # Write header
+        out = open(join(fp[0], "out-swan", fp[1]+".txt"), "w")
+        out.write("TPAR\n\n")
+        out.close()
 
-    print("Processing file %s..." % fp[1])
+        print("Processing file %s..." % fp[1])
 
-    # Open Excel-style CSV
-    df = pd.read_csv(f, sep=args.separator, decimal=args.decimal)
+        # Open Excel-style CSV
+        df = pd.read_csv(f, sep=args.separator, decimal=args.decimal)
 
-    # Transform data
-    df["timestamp"] = pd.to_datetime(df[["year", "month", "day", "hour"]])
-    df["trans_timestamp"] = df["timestamp"].dt.strftime("%Y%m%d.%H%M%S")
-    df["mode"] = 2
+        # Transform data
+        df["timestamp"] = pd.to_datetime(df[["year", "month", "day", "hour"]])
+        df["trans_timestamp"] = df["timestamp"].dt.strftime("%Y%m%d.%H%M%S")
+        df["mode"] = 2
+        df["trans_Hs"] = df["Hs"].map("{:,.2f}".format)
+        df["trans_T"] = df["T"].map("{:,.2f}".format)
+        df["trans_wind_direction"] = df["wind direction"].round()
 
-    # Write appending to the file with header
-    df.to_csv(join(fp[0], "out-swan", fp[1]+".txt"), mode="a+", sep="\t",header=False, index=False, columns=["trans_timestamp", "Hs", "T", "wind direction", "mode"])
+        # Write appending to the file with header
+        df.to_csv(join(fp[0], "out-swan", fp[1]+".txt"), mode="a+", sep=" ",header=False, index=False, columns=["trans_timestamp", "trans_Hs", "trans_T", "trans_wind_direction", "mode"])
+        
+    except:
+        print("Unable to process file %s..." % fp[1])
+        print("Check column names and format")
+
+    print()
